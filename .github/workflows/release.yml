@@ -8,10 +8,10 @@ on:
       - config-store/**
       - '!config-store/*.md'
 
+  workflow_dispatch:
+
 jobs:
   release:
-    # depending on default permission settings for your org (contents being read-only or read-write for workloads), you will have to add permissions
-    # see: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -31,4 +31,6 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          charts_dir: config-store
+          charts_dir: config-store  # Explicitly set the charts directory
+          skip_packaging: false     # Ensure packaging is not skipped
+          skip_existing: false      # Ensure existing releases are not skipped
