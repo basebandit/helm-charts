@@ -3,59 +3,32 @@ name: Release Helm Chart
 on:
   push:
     branches:
-      - '**'
+      - main
     paths:
       - config-store/**
       - '!config-store/*.md'
 
-  workflow_dispatch:
-
 jobs:
   release:
-    runs-on: ubuntu-latest
+    # depending on default permission settings for your org (contents being read-only or read-write for workloads), you will have to add permissions
+    # see: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
     permissions:
       contents: write
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Helm
-        run: |
-          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
-          sudo apt-get install apt-transport-https --yes
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-          sudo apt-get update
-          sudo apt-get install helm
-
-      - name: Verify Helm installation
-        run: helm version
-
-      - name: Extract chart version
-        id: get_version
-        run: |
-          CHART_VERSION=$(helm show chart helm-charts/config-store | grep '^version:' | awk '{print $2}')
-          echo "chart_version=$CHART_VERSION" >> $GITHUB_ENV
-
-      - name: Check if chart version exists
-        run: |
-          CHART_VERSION=${{ env.chart_version }}
-          echo "Checking if version $CHART_VERSION exists..."
-          if curl -s https://basebandit.github.io/helm-charts/index.yaml | grep -q "version: $CHART_VERSION"; then
-            echo "Version $CHART_VERSION already exists. Exiting."
-            exit 1
-          fi
-
       - name: Configure Git
         run: |
-          git config --global user.name "evanson"
-          git config --global user.email "evansonmwangi83@gmail.com"
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.6.0
+        uses: helm/chart-releaser-action@v1.7.0
         env:
-          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           charts_dir: config-store
