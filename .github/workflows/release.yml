@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Helm
         run: |
@@ -46,12 +48,14 @@ jobs:
             exit 1
           fi
 
-      - name: Package Helm chart
-        run: helm package helm-charts/config-store --destination helm-charts/
+      - name: Configure Git
+        run: |
+          git config --global user.name "evanson"
+          git config --global user.email "evansonmwangi83@gmail.com"
 
-      - name: Publish Helm chart to GitHub Pages
+      - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          charts_dir: helm-charts/
+          charts_dir: helm-charts/config-store
