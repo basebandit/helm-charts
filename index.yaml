@@ -8,7 +8,7 @@ entries:
     - name: postgresql
       repository: https://charts.bitnami.com/bitnami
       version: 16.4.14
-    description: A Helm chart for Kubernetes
+    description: A Helm chart for Deploying config-store application in Kubernetes
     digest: 568e33875cc138670381c42f8dc0fb97b792701b6609cf17ff7f4e901baaa05b
     name: config-store
     type: application
