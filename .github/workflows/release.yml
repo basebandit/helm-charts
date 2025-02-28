@@ -30,7 +30,3 @@ jobs:
         uses: helm/chart-releaser-action@v1.7.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        with:
-          charts_dir: config-store  # Explicitly set the charts directory
-          skip_packaging: false     # Ensure packaging is not skipped
-          skip_existing: false      # Ensure existing releases are not skipped
