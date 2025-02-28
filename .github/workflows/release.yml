@@ -1,0 +1,57 @@
+name: Release Helm Chart
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - helm-charts/config-store/**
+      - '!helm-charts/config-store/*.md'
+
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+
+      - name: Verify Helm installation
+        run: helm version
+
+      - name: Extract chart version
+        id: get_version
+        run: |
+          CHART_VERSION=$(helm show chart helm-charts/config-store | grep '^version:' | awk '{print $2}')
+          echo "chart_version=$CHART_VERSION" >> $GITHUB_ENV
+
+      - name: Check if chart version exists
+        run: |
+          CHART_VERSION=${{ env.chart_version }}
+          echo "Checking if version $CHART_VERSION exists..."
+          if curl -s https://basebandit.github.io/helm-charts/index.yaml | grep -q "version: $CHART_VERSION"; then
+            echo "Version $CHART_VERSION already exists. Exiting."
+            exit 1
+          fi
+
+      - name: Package Helm chart
+        run: helm package helm-charts/config-store --destination helm-charts/
+
+      - name: Publish Helm chart to GitHub Pages
+        uses: helm/chart-releaser-action@v1.6.0
+        env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          charts_dir: helm-charts/
