@@ -5,8 +5,8 @@ on:
     branches:
       - '**'
     paths:
-      - helm-charts/config-store/**
-      - '!helm-charts/config-store/*.md'
+      - config-store/**
+      - '!config-store/*.md'
 
   workflow_dispatch:
 
@@ -58,4 +58,4 @@ jobs:
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          charts_dir: helm-charts/config-store
+          charts_dir: config-store
